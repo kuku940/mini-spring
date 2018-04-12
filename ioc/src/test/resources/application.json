@@ -1,0 +1,44 @@
+[
+  {
+    "name": "hand",
+    "className": "cn.xiaoyu.framework.ioc.domain.Hand",
+    "propertyArgs": [
+      {
+        "name": "code",
+        "value": "111111"
+      },
+      {
+        "name": "mouth",
+        "ref": "mouth"
+      }
+    ]
+  },
+  {
+    "name": "mouth",
+    "className": "cn.xiaoyu.framework.ioc.domain.Mouth",
+    "propertyArgs": [
+      {
+        "name": "code",
+        "value": "222222"
+      },
+      {
+        "name": "hand",
+        "ref": "hand"
+      }
+    ]
+  },
+  {
+    "name": "robot",
+    "className": "cn.xiaoyu.framework.ioc.domain.Robot",
+    "propertyArgs": [
+      {
+        "name": "hand",
+        "ref": "hand"
+      },
+      {
+        "name": "mouth",
+        "ref": "mouth"
+      }
+    ]
+  }
+]
