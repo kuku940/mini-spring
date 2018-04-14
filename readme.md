@@ -1,23 +1,37 @@
-## IOC - 控制反转
+## IoC - 控制反转
 控制反转（Inversion of Control，IoC），是面向对象编程中的一种设计原则，可以用来减低计算机代码之间耦合度。  
 最常见的方式叫做依赖注入(Dependency Injection，DI)。通过控制反转，对象在被创建的时候，
 由一个调控系统内所有对象的外界实体，将其所依赖的对象的引用传递给它，也可以说是依赖注入对象。
 
-1. 初始化IoC容器，读取配置文件；
+### IoC容器初始化 - BeanDefinition解析和注册
+1. 初始化IoC容器，读取配置文件 -> BeanDefinition解析和注册；
 2. 将配置文件转换为容器能够识别的数据结构BeanDefinition
-    - 默认Bean标签解析
-    - 自定义标签解析
-3. 利用数据结构BeanDefinition依次实例化对象Bean
-4. 注入对象之间的依赖关系
-    - 根据类型
-    - 根据名称
+    - 默认Bean标签解析: import, bean, beans, alias
+    - 自定义标签解析: aop, context, tx
+3. 注册BeanDefinition到beanDefinitionMap中
+ 
+### Bean加载
+1. 利用BeanDefinition实例化Bean对象
+2. 解决循环依赖问题，提早曝光Bean对象
+3. 属性注入
+    - 根据类型自动注入 - **byType**
+    - 根据名称自动注入 - **byName**
+4. 完成创建，根据scope创建Bean
 
 
 ## AOP - 面向切面编程
 面向切面编程，实际上就是通过预编译或者**动态代理**的技术在**不修改源代码**的情况下给原来的**程序统一添加功能**的一种技术。
 在很多方面都有应用，如：权限，缓存，日志，事务等等。
 
-spring的AOP的实现主要步骤：
+### AOP实现
+1. 在Bean初始化时，会调用后处理器，判断当前Bean是否能被代理；
+2. 获取所有的增强器，对所有AspectJ注释的类进行增强器的提取，加入缓存[Before, After, Around, AfterReturning, AfterThrowing]；
+3. 寻找匹配当前Bean的增强器，并对增强器进行排序；
+4. 创建代理
+    - JDK动态代理[spring的默认实现]
+    - CGLib动态代理[proxy-target-class配置为true]
+
+AOP的实现主要步骤：
 1. 初始化AOP容器；
 2. 读取配置文件；
 3. 将配置文件装换为AOP能够识别的数据结构– **Advisor**。Advisor对象中包含了两个重要的数据结构：Advice和Pointcut。  
