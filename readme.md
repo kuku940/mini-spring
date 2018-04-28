@@ -24,14 +24,46 @@
 在很多方面都有应用，如：权限，缓存，日志，事务等等。
 
 ### AOP实现
-1. 在Bean初始化时，会调用后处理器，判断当前Bean是否能被代理；
-2. 获取所有的增强器，对所有AspectJ注释的类进行增强器的提取，加入缓存[Before, After, Around, AfterReturning, AfterThrowing]；
-3. 寻找匹配当前Bean的增强器，并对增强器进行排序；
-4. 创建代理
+1. 在Bean初始化时，会调用后AbstractAutoProxyCreator.postProcessAfterInitialization()后处理器，
+判断当前Bean是否存在增强方法，如果存在则创建代理；
+2.提取所有的增强器，寻找匹配当前Bean的增强器，并对匹配的增强器进行排序
+    - 遍历所有的Bean，对有AspectJ注释的类进行增强器提取，并加入缓存[Before, After, Around, AfterReturning, AfterThrowing]
+    - 寻找所有增强器中适用于当前class的增强器
+    - 对增强器进行排序
+3. 构建ProxyFactory，添加代理接口，封装增强器，设置要代理的类，最后创建代理
     - JDK动态代理[spring的默认实现]
     - CGLib动态代理[proxy-target-class配置为true]
 
-AOP的实现主要步骤：
+        
+    public AopProxy createAopProxy(AdvisedSupport config) throws AopConfigException {
+         //optimize：用来控制通过CGLib创建的代理是否使用激进的优化策略；
+         //proxyTargetClass：目标类本身被代理，而不是目标类的接口
+         //hasNoUserSuppliedProxyInterfaces： 是否存在代理接口
+        if (config.isOptimize() || config.isProxyTargetClass() || hasNoUserSuppliedProxyInterfaces(config)) {
+            Class targetClass = config.getTargetClass();
+            if (targetClass == null) {
+                throw new AopConfigException("TargetSource cannot determine target class: " +
+                        "Either an interface or a target is required for proxy creation.");
+            }
+            if (targetClass.isInterface()) {
+                return new JdkDynamicAopProxy(config);
+            }
+            return CglibProxyFactory.createCglibProxy(config);
+        } else {
+            return new JdkDynamicAopProxy(config);
+        }
+    }
+    
+4. JDK动态代理
+    - 获取拦截器
+    - 判断拦截器链是否为null，如果是空的话直接调用切点方法
+    - 如果拦截器链不为空的话，使用ReflectiveMethodInvocation类封装，把拦截器方法都封装在里面
+    - 然后使用ReflectiveMethodInvocation.proceed()实现拦截器的逐一调用
+    
+   CGLib动态代理和JDK类似都是创建方法调用链，CGLib创建CglibMethodInvocation。
+    
+
+### 自己实现AOP的主要步骤：
 1. 初始化AOP容器；
 2. 读取配置文件；
 3. 将配置文件装换为AOP能够识别的数据结构– **Advisor**。Advisor对象中包含了两个重要的数据结构：Advice和Pointcut。  
