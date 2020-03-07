@@ -34,25 +34,26 @@
     - JDK动态代理[spring的默认实现]
     - CGLib动态代理[proxy-target-class配置为true]
 
-        
-    public AopProxy createAopProxy(AdvisedSupport config) throws AopConfigException {
-         //optimize：用来控制通过CGLib创建的代理是否使用激进的优化策略；
-         //proxyTargetClass：目标类本身被代理，而不是目标类的接口
-         //hasNoUserSuppliedProxyInterfaces： 是否存在代理接口
-        if (config.isOptimize() || config.isProxyTargetClass() || hasNoUserSuppliedProxyInterfaces(config)) {
-            Class targetClass = config.getTargetClass();
-            if (targetClass == null) {
-                throw new AopConfigException("TargetSource cannot determine target class: " +
-                        "Either an interface or a target is required for proxy creation.");
-            }
-            if (targetClass.isInterface()) {
-                return new JdkDynamicAopProxy(config);
-            }
-            return CglibProxyFactory.createCglibProxy(config);
-        } else {
+```java
+public AopProxy createAopProxy(AdvisedSupport config) throws AopConfigException {
+     //optimize：用来控制通过CGLib创建的代理是否使用激进的优化策略；
+     //proxyTargetClass：目标类本身被代理，而不是目标类的接口
+     //hasNoUserSuppliedProxyInterfaces： 是否存在代理接口
+    if (config.isOptimize() || config.isProxyTargetClass() || hasNoUserSuppliedProxyInterfaces(config)) {
+        Class targetClass = config.getTargetClass();
+        if (targetClass == null) {
+            throw new AopConfigException("TargetSource cannot determine target class: " +
+                    "Either an interface or a target is required for proxy creation.");
+        }
+        if (targetClass.isInterface()) {
             return new JdkDynamicAopProxy(config);
         }
+        return CglibProxyFactory.createCglibProxy(config);
+    } else {
+        return new JdkDynamicAopProxy(config);
     }
+}
+```
     
 4. JDK动态代理
     - 获取拦截器
